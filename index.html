@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PassportFolio - Bộ Sưu Tập Giấy Tờ Du Lịch Toàn Cầu</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts (Inter & Playfair Display for premium luxury look) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons for travel decoration -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        gold: {
+                            50: '#fbf7eb',
+                            100: '#f4ebd0',
+                            200: '#e9d69f',
+                            300: '#dbbc68',
+                            400: '#cca23b',
+                            500: '#b88b2d',
+                            600: '#996d24',
+                            700: '#7a521e',
+                            800: '#64421b',
+                            900: '#54361a',
+                        },
+                        navy: {
+                            800: '#0f1c3f',
+                            900: '#070f26',
+                            950: '#030714',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Premium Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #070f26;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b88b2d;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #cca23b;
+        }
+        
+        .gold-shimmer {
+            background: linear-gradient(135deg, #b88b2d 0%, #cca23b 50%, #f4ebd0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .passport-pattern {
+            background-color: #070f26;
+            background-image: radial-gradient(rgba(184, 139, 45, 0.15) 1px, transparent 0), radial-gradient(rgba(184, 139, 45, 0.15) 1px, transparent 0);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
+        }
+    </style>
+</head>
+<body class="bg-navy-950 text-slate-200 font-sans min-h-screen passport-pattern flex flex-col justify-between">
+
+    <!-- Header -->
+    <header class="border-b border-gold-900/40 bg-navy-900/90 backdrop-blur-md sticky top-0 z-40 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-tr from-gold-700 to-gold-400 flex items-center justify-center shadow-lg shadow-gold-900/20">
+                    <i class="fa-solid fa-passport text-navy-950 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-serif font-bold tracking-wider gold-shimmer uppercase">PassportFolio</h1>
+                    <p class="text-[10px] tracking-widest text-gold-300/60 uppercase">Global Travel Documents Registry</p>
+                </div>
+            </div>
+            
+            <!-- Quick Info Stat Cards (Header) -->
+            <div class="flex items-center space-x-4">
+                <div class="bg-navy-800/60 border border-gold-900/30 rounded-lg px-3 py-1 flex items-center space-x-2 text-xs">
+                    <i class="fa-solid fa-earth-americas text-gold-400"></i>
+                    <div>
+                        <span class="text-slate-400">Quốc gia:</span>
+                        <span id="collected-countries-count" class="font-bold text-gold-400 ml-1">0/195</span>
+                    </div>
+                </div>
+                <div class="bg-navy-800/60 border border-gold-900/30 rounded-lg px-3 py-1 flex items-center space-x-2 text-xs">
+                    <i class="fa-solid fa-images text-gold-400"></i>
+                    <div>
+                        <span class="text-slate-400">Giấy tờ:</span>
+                        <span id="total-docs-count" class="font-bold text-gold-400 ml-1">0</span>
+                    </div>
+                </div>
+                
+                <!-- Backup and Import Buttons -->
+                <div class="flex items-center space-x-1">
+                    <button onclick="exportData()" title="Xuất lưu trữ bộ sưu tập (Backup JSON)" class="p-2 text-gold-400 hover:text-gold-200 bg-navy-800/40 hover:bg-navy-800 rounded-md transition-colors border border-gold-900/20">
+                        <i class="fa-solid fa-file-export"></i>
+                    </button>
+                    <button onclick="triggerImport()" title="Nhập lại dữ liệu lưu trữ" class="p-2 text-gold-400 hover:text-gold-200 bg-navy-800/40 hover:bg-navy-800 rounded-md transition-colors border border-gold-900/20">
+                        <i class="fa-solid fa-file-import"></i>
+                    </button>
+                    <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="importData(event)">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-grow w-full">
+        <!-- Dashboard Progress Overview -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            <!-- Progress Circle Card -->
+            <div class="bg-navy-900/80 border border-gold-900/40 rounded-xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+                <div class="text-center sm:text-left">
+                    <h3 class="font-serif font-bold text-gold-100 text-lg">Tiến Độ Sưu Tập</h3>
+                    <p class="text-xs text-slate-400 mt-1">Hành trình khám phá lưu trữ thế giới qua hộ chiếu & thị thực của bạn.</p>
+                </div>
+                <div class="relative w-24 h-24 flex-shrink-0">
+                    <svg class="w-full h-full transform -rotate-90">
+                        <circle cx="48" cy="48" r="40" stroke="#0f1c3f" stroke-width="8" fill="transparent" />
+                        <circle cx="48" cy="48" r="40" stroke="#b88b2d" stroke-width="8" fill="transparent" 
+                                stroke-dasharray="251.2" stroke-dashoffset="251.2" id="progress-circle" class="transition-all duration-1000 ease-out" />
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center flex-col">
+                        <span id="progress-percent" class="text-lg font-bold text-gold-400">0%</span>
+                        <span class="text-[8px] tracking-widest uppercase text-slate-400">Hoàn thành</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fast Categories summary -->
+            <div class="bg-navy-900/80 border border-gold-900/40 rounded-xl p-5 lg:col-span-3 grid grid-cols-2 sm:grid-cols-4 gap-4 shadow-xl">
+                <div class="bg-navy-950/40 border border-gold-900/10 rounded-lg p-3 text-center flex flex-col justify-center items-center">
+                    <span class="p-2 rounded-full bg-navy-800 text-gold-400 mb-1"><i class="fa-solid fa-address-card"></i></span>
+                    <span class="text-xs text-slate-400">Hộ chiếu (Passports)</span>
+                    <span id="stat-passports" class="text-lg font-bold text-gold-100 mt-1">0</span>
+                </div>
+                <div class="bg-navy-950/40 border border-gold-900/10 rounded-lg p-3 text-center flex flex-col justify-center items-center">
+                    <span class="p-2 rounded-full bg-navy-800 text-gold-400 mb-1"><i class="fa-solid fa-ticket"></i></span>
+                    <span class="text-xs text-slate-400">Thị thực (Visas)</span>
+                    <span id="stat-visas" class="text-lg font-bold text-gold-100 mt-1">0</span>
+                </div>
+                <div class="bg-navy-950/40 border border-gold-900/10 rounded-lg p-3 text-center flex flex-col justify-center items-center">
+                    <span class="p-2 rounded-full bg-navy-800 text-gold-400 mb-1"><i class="fa-solid fa-stamp"></i></span>
+                    <span class="text-xs text-slate-400">Con dấu (Stamps)</span>
+                    <span id="stat-stamps" class="text-lg font-bold text-gold-100 mt-1">0</span>
+                </div>
+                <div class="bg-navy-950/40 border border-gold-900/10 rounded-lg p-3 text-center flex flex-col justify-center items-center">
+                    <span class="p-2 rounded-full bg-navy-800 text-gold-400 mb-1"><i class="fa-solid fa-passport"></i></span>
+                    <span class="text-xs text-slate-400">Khác / Thẻ hành lý</span>
+                    <span id="stat-others" class="text-lg font-bold text-gold-100 mt-1">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- STRAMING_CHUNK: Setup country browser and document display column layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- LEFT COLUMN: Country Explorer Panel (4/12 width) -->
+            <div class="lg:col-span-4 bg-navy-900/80 border border-gold-900/40 rounded-xl overflow-hidden shadow-xl h-[650px] flex flex-col">
+                <!-- Country filter & search controls -->
+                <div class="p-4 border-b border-gold-900/40 bg-navy-950/80 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h2 class="font-serif font-bold text-gold-200 tracking-wide text-md">BẢN ĐỒ QUỐC GIA ({195})</h2>
+                        <span class="text-[10px] bg-gold-900/40 text-gold-200 border border-gold-500/30 px-2 py-0.5 rounded-full font-semibold uppercase">Chọn để xem</span>
+                    </div>
+                    
+                    <!-- Search Input -->
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-gold-500/60 text-sm"></i>
+                        <input type="text" id="country-search" oninput="filterCountries()" placeholder="Tìm VN, VNM, HAN, SGN, JFK, LAX..." 
+                               class="w-full pl-9 pr-4 py-1.5 text-[11px] sm:text-sm rounded-lg bg-navy-950 border border-gold-900/40 text-gold-100 placeholder-slate-500 focus:outline-none focus:border-gold-400 transition-colors">
+                    </div>
+
+                    <!-- Continent Tabs Filter -->
+                    <div class="flex space-x-1 overflow-x-auto py-1 scrollbar-none text-[11px]">
+                        <button onclick="changeContinent('All')" id="tab-All" class="continent-tab px-2.5 py-1 rounded bg-gold-800/60 text-gold-100 font-medium whitespace-nowrap border border-gold-500/40 transition-all">Tất cả</button>
+                        <button onclick="changeContinent('Asia')" id="tab-Asia" class="continent-tab px-2.5 py-1 rounded bg-navy-950 text-slate-400 border border-transparent whitespace-nowrap transition-all">Châu Á</button>
+                        <button onclick="changeContinent('Europe')" id="tab-Europe" class="continent-tab px-2.5 py-1 rounded bg-navy-950 text-slate-400 border border-transparent whitespace-nowrap transition-all">Châu Âu</button>
+                        <button onclick="changeContinent('Americas')" id="tab-Americas" class="continent-tab px-2.5 py-1 rounded bg-navy-950 text-slate-400 border border-transparent whitespace-nowrap transition-all">Châu Mỹ</button>
+                        <button onclick="changeContinent('Africa')" id="tab-Africa" class="continent-tab px-2.5 py-1 rounded bg-navy-950 text-slate-400 border border-transparent whitespace-nowrap transition-all">Châu Phi</button>
+                        <button onclick="changeContinent('Oceania')" id="tab-Oceania" class="continent-tab px-2.5 py-1 rounded bg-navy-950 text-slate-400 border border-transparent whitespace-nowrap transition-all">C. Đại Dương</button>
+                    </div>
+
+                    <!-- Quick Checkbox Filter (Only Show Collected) -->
+                    <div class="flex items-center space-x-2 pt-1">
+                        <input type="checkbox" id="filter-collected-only" onchange="filterCountries()" class="rounded border-gold-900 bg-navy-950 text-gold-600 focus:ring-0 focus:ring-offset-0">
+                        <label for="filter-collected-only" class="text-xs text-slate-300 cursor-pointer hover:text-gold-200">Chỉ hiện quốc gia đã có ảnh sưu tập</label>
+                    </div>
+                </div>
+
+                <!-- Country List Container -->
+                <div id="country-list" class="overflow-y-auto flex-grow divide-y divide-gold-900/10 bg-navy-950/30">
+                    <!-- Loaded dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Active Country Profile & Gallery (8/12 width) -->
+            <div id="country-gallery-panel" class="lg:col-span-8 bg-navy-900/80 border border-gold-900/40 rounded-xl overflow-hidden shadow-xl h-[650px] flex flex-col relative">
+                <!-- Fallback view when no country selected -->
+                <div id="no-country-fallback" class="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-navy-900/95 z-10">
+                    <div class="w-24 h-24 rounded-full bg-navy-850 border-2 border-dashed border-gold-500/30 flex items-center justify-center text-gold-400 mb-6 text-3xl animate-pulse">
+                        <i class="fa-solid fa-earth-passport"></i>
+                    </div>
+                    <h3 class="font-serif font-bold text-2xl text-gold-100">Chọn Một Quốc Gia Để Bắt Đầu</h3>
+                    <p class="text-sm text-slate-400 max-w-md mt-2">Duyệt danh sách hơn 190 quốc gia ở bảng bên trái. Tìm kiếm theo mã 2 chữ (VN, JP, US), mã 3 chữ (VNM, JPN, USA) hoặc mã sân bay IATA để lọc nhanh quốc gia!</p>
+                    
+                    <!-- Quick action presets -->
+                    <div class="mt-6 flex flex-wrap gap-2 justify-center">
+                        <button onclick="selectCountry('VN')" class="px-4 py-2 text-xs bg-gold-700/20 text-gold-300 rounded-lg hover:bg-gold-700/30 border border-gold-500/40 transition-colors">
+                            🇻🇳 Xem Việt Nam (VN / VNM)
+                        </button>
+                        <button onclick="selectCountry('JP')" class="px-4 py-2 text-xs bg-gold-700/20 text-gold-300 rounded-lg hover:bg-gold-700/30 border border-gold-500/40 transition-colors">
+                            🇯🇵 Xem Nhật Bản (JP / JPN)
+                        </button>
+                        <button onclick="selectCountry('FR')" class="px-4 py-2 text-xs bg-gold-700/20 text-gold-300 rounded-lg hover:bg-gold-700/30 border border-gold-500/40 transition-colors">
+                            🇫🇷 Xem Pháp (FR / FRA)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Country Top Card Header -->
+                <div id="active-country-header" class="p-6 bg-gradient-to-r from-navy-900 to-navy-800 border-b border-gold-900/40 flex flex-wrap items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div id="active-flag-container" class="text-4xl shadow-lg leading-none rounded p-1 bg-navy-950/60 border border-gold-900/30">🇻🇳</div>
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <h2 id="active-country-name" class="font-serif font-bold text-2xl text-gold-100">Cộng hòa Xã hội Chủ nghĩa Việt Nam</h2>
+                            </div>
+                            <p class="text-xs text-gold-400/80 mt-0.5">
+                                <i class="fa-solid fa-globe mr-1"></i> <span id="active-country-continent">Châu Á</span> 
+                                | ISO-2: <span id="active-country-code" class="font-bold text-gold-300">VN</span> 
+                                | ISO-3: <span id="active-country-code3" class="font-bold text-gold-300">VNM</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <button onclick="openAddDocModal()" class="px-4 py-2 rounded-lg bg-gold-600 hover:bg-gold-500 text-navy-950 font-bold text-xs flex items-center space-x-1.5 shadow-lg shadow-gold-700/20 hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Thêm Giấy Tờ</span>
+                    </button>
+                </div>
+
+                <!-- Active Country Gallery Area -->
+                <div class="p-6 flex-grow overflow-y-auto bg-navy-950/30">
+                    <!-- Filters inside selected country gallery -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+                        <div class="flex space-x-2" id="doc-type-filter-group">
+                            <button onclick="filterActiveDocs('all')" class="doc-filter-btn px-3 py-1 rounded bg-gold-800/40 text-gold-200 text-xs border border-gold-500/30 font-medium">Tất cả</button>
+                            <button onclick="filterActiveDocs('passport')" class="doc-filter-btn px-3 py-1 rounded bg-navy-850 text-slate-400 text-xs border border-transparent">Hộ chiếu</button>
+                            <button onclick="filterActiveDocs('visa')" class="doc-filter-btn px-3 py-1 rounded bg-navy-850 text-slate-400 text-xs border border-transparent">Thị thực</button>
+                            <button onclick="filterActiveDocs('stamp')" class="doc-filter-btn px-3 py-1 rounded bg-navy-850 text-slate-400 text-xs border border-transparent">Con dấu</button>
+                            <button onclick="filterActiveDocs('other')" class="doc-filter-btn px-3 py-1 rounded bg-navy-850 text-slate-400 text-xs border border-transparent">Khác</button>
+                        </div>
+                    </div>
+
+                    <!-- Documents Grid -->
+                    <div id="documents-gallery-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Render dynamically from JS -->
+                    </div>
+
+                    <!-- Empty Gallery Placeholder inside Country -->
+                    <div id="empty-gallery-state" class="hidden flex-col items-center justify-center py-16 text-center text-slate-400">
+                        <i class="fa-solid fa-folder-open text-4xl text-gold-800/40 mb-3"></i>
+                        <p class="text-sm font-semibold text-slate-300">Chưa có dữ liệu cho quốc gia này</p>
+                        <p class="text-xs text-slate-500 max-w-xs mt-1">Hãy nhấp nút "Thêm Giấy Tờ" phía trên để lưu giữ lại Hộ chiếu, Visa hoặc Dấu xuất nhập cảnh đầu tiên.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ADD DOCUMENT MODAL -->
+    <div id="add-doc-modal" class="fixed inset-0 bg-navy-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-navy-900 border border-gold-500/50 rounded-xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col transform scale-95 transition-transform duration-300">
+            <!-- Modal Header -->
+            <div class="p-4 bg-gradient-to-r from-navy-900 to-navy-850 border-b border-gold-900/40 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-file-invoice text-gold-400 text-lg"></i>
+                    <h3 class="font-serif font-bold text-gold-100 text-lg">Thêm Giấy Tờ Mới - <span id="modal-country-name">Việt Nam</span></h3>
+                </div>
+                <button onclick="closeAddDocModal()" class="text-slate-400 hover:text-gold-400 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <!-- Modal Body (Form) -->
+            <form id="add-doc-form" onsubmit="handleSaveDoc(event)" class="p-6 space-y-4 overflow-y-auto max-h-[80vh]">
+                <input type="hidden" id="form-country-code">
+                
+                <!-- Doc Title -->
+                <div>
+                    <label class="block text-xs font-semibold text-gold-300/80 uppercase mb-1">Tên Giấy Tờ <span class="text-red-500">*</span></label>
+                    <input type="text" id="form-title" required placeholder="Ví dụ: Hộ chiếu phổ thông (mẫu xanh tím), Visa đi học..." 
+                           class="w-full px-3 py-2 text-sm rounded-lg bg-navy-950 border border-gold-900/40 text-gold-100 focus:outline-none focus:border-gold-400">
+                </div>
+
+                <!-- Grid Row for Type and Date -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gold-300/80 uppercase mb-1">Loại Giấy Tờ <span class="text-red-500">*</span></label>
+                        <select id="form-type" required class="w-full px-3 py-2 text-sm rounded-lg bg-navy-950 border border-gold-900/40 text-gold-100 focus:outline-none focus:border-gold-400">
+                            <option value="passport">📕 Hộ chiếu (Passport)</option>
+                            <option value="visa">🎫 Thị thực (Visa sticker/e-Visa)</option>
+                            <option value="stamp"> Stamp / Dấu xuất nhập cảnh</option>
+                            <option value="other">✈️ Vé máy bay / Thẻ khác</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gold-300/80 uppercase mb-1">Ngày Thu Thập / Ngày Cấp</label>
+                        <input type="date" id="form-date" class="w-full px-3 py-2 text-sm rounded-lg bg-navy-950 border border-gold-900/40 text-gold-100 focus:outline-none focus:border-gold-400">
+                    </div>
+                </div>
+
+                <!-- Custom Image Upload & Presets -->
+                <div>
+                    <label class="block text-xs font-semibold text-gold-300/80 uppercase mb-1">Hình ảnh Tài liệu <span class="text-red-500">*</span></label>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Upload Box -->
+                        <div class="border-2 border-dashed border-gold-900/50 rounded-lg p-4 bg-navy-950/40 text-center flex flex-col items-center justify-center cursor-pointer hover:border-gold-500/60 transition-colors relative" onclick="triggerFileInput()">
+                            <input type="file" id="form-image-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+                            <div id="upload-prompt" class="space-y-1">
+                                <i class="fa-solid fa-cloud-arrow-up text-gold-500/60 text-2xl"></i>
+                                <p class="text-[11px] text-slate-300">Click để tải ảnh hoặc Chụp ảnh</p>
+                                <p class="text-[9px] text-slate-500">Hỗ trợ JPG, PNG, WEBP</p>
+                            </div>
+                            <!-- Image Preview overlay inside upload box -->
+                            <img id="upload-preview" class="hidden absolute inset-0 w-full h-full object-cover rounded-lg">
+                        </div>
+
+                        <!-- Presets Selector (Highly useful fallback if user doesn't have an image ready) -->
+                        <div class="space-y-1.5 flex flex-col justify-between">
+                            <span class="text-[10px] text-slate-400">Hoặc chọn nhanh ảnh mẫu có sẵn minh họa:</span>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button type="button" onclick="selectPresetImage('passport')" class="p-1 border border-gold-900/20 rounded hover:border-gold-400/60 bg-navy-950/50 text-[10px] text-slate-300 flex flex-col items-center">
+                                    <div class="w-full h-8 bg-gold-900/20 rounded mb-1 flex items-center justify-center"><i class="fa-solid fa-passport text-gold-400"></i></div>
+                                    Hộ Chiếu Mẫu
+                                </button>
+                                <button type="button" onclick="selectPresetImage('visa')" class="p-1 border border-gold-900/20 rounded hover:border-gold-400/60 bg-navy-950/50 text-[10px] text-slate-300 flex flex-col items-center">
+                                    <div class="w-full h-8 bg-gold-900/20 rounded mb-1 flex items-center justify-center"><i class="fa-solid fa-ticket text-gold-400"></i></div>
+                                    Visa Mẫu
+                                </button>
+                                <button type="button" onclick="selectPresetImage('stamp')" class="p-1 border border-gold-900/20 rounded hover:border-gold-400/60 bg-navy-950/50 text-[10px] text-slate-300 flex flex-col items-center">
+                                    <div class="w-full h-8 bg-gold-900/20 rounded mb-1 flex items-center justify-center"><i class="fa-solid fa-stamp text-gold-400"></i></div>
+                                    Con Dấu Mẫu
+                                </button>
+                            </div>
+                            <input type="hidden" id="selected-image-data">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                    <label class="block text-xs font-semibold text-gold-300/80 uppercase mb-1">Ghi chú Hành Trình / Kỷ niệm</label>
+                    <textarea id="form-notes" rows="3" placeholder="Nhập cảm xúc khi đến cửa khẩu, trải nghiệm xin visa, kỷ niệm chuyến đi của bạn..." 
+                              class="w-full px-3 py-2 text-sm rounded-lg bg-navy-950 border border-gold-900/40 text-gold-100 focus:outline-none focus:border-gold-400"></textarea>
+                </div>
+
+                <!-- Form Footer Buttons -->
+                <div class="flex items-center justify-end space-x-3 pt-3 border-t border-gold-900/20">
+                    <button type="button" onclick="closeAddDocModal()" class="px-4 py-2 rounded-lg bg-navy-800 text-slate-300 hover:text-white hover:bg-navy-750 text-xs font-semibold transition-all">Hủy</button>
+                    <button type="submit" class="px-5 py-2 rounded-lg bg-gold-600 hover:bg-gold-500 text-navy-950 text-xs font-bold shadow-lg shadow-gold-700/20 hover:scale-105 transition-all">Lưu Tài Liệu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- VIEW FULL-SCREEN IMAGE MODAL WITH ACTIONS -->
+    <div id="view-doc-modal" class="fixed inset-0 bg-navy-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-navy-900 border border-gold-500/40 rounded-xl max-w-2xl w-full overflow-hidden shadow-2xl flex flex-col transform scale-95 transition-transform duration-300">
+            <!-- Header -->
+            <div class="p-4 bg-navy-950/90 border-b border-gold-900/40 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <span id="view-flag" class="text-xl">🇻🇳</span>
+                    <div>
+                        <h3 id="view-title" class="font-serif font-bold text-gold-100 text-md">Tên tài liệu</h3>
+                        <p id="view-meta" class="text-[10px] text-slate-400">Quốc gia | Ngày tạo</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <button onclick="rotateImage()" class="p-2 text-slate-400 hover:text-gold-400 text-sm" title="Xoay hình ảnh"><i class="fa-solid fa-rotate"></i></button>
+                    <button onclick="closeViewDocModal()" class="text-slate-400 hover:text-gold-400 text-lg ml-2"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <!-- Image View Body -->
+            <div class="relative bg-navy-950 flex justify-center items-center min-h-[300px] max-h-[50vh] overflow-hidden p-4">
+                <img id="view-image" src="" alt="Travel Document" class="max-w-full max-h-full object-contain transition-transform duration-300 rounded shadow-md">
+            </div>
+
+            <!-- Notes, Actions & Editing Footer -->
+            <div class="p-6 bg-navy-900 border-t border-gold-900/30 space-y-4">
+                <div>
+                    <span class="block text-xs font-semibold text-gold-300/80 uppercase mb-1">Nhật ký hành trình / Ghi chú:</span>
+                    <p id="view-notes" class="text-sm text-slate-300 italic bg-navy-950/60 p-3 rounded-lg border border-gold-900/10 min-h-[50px]">Không có ghi chú nào.</p>
+                </div>
+                
+                <div class="flex items-center justify-between pt-2 border-t border-gold-900/10">
+                    <button id="view-delete-btn" onclick="" class="px-4 py-2 rounded bg-red-950/40 hover:bg-red-900/40 border border-red-500/40 text-red-200 text-xs font-semibold transition-all flex items-center space-x-1.5">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>Xóa Tài Liệu</span>
+                    </button>
+                    <button onclick="closeViewDocModal()" class="px-4 py-2 rounded bg-gold-600 hover:bg-gold-500 text-navy-950 text-xs font-bold transition-all">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- Footer -->
+    <footer class="border-t border-gold-900/20 bg-navy-950/80 py-4 text-center text-xs text-gold-500/60">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>© 2026 PassportFolio. Lưu trữ ký ức và thủ tục biên giới của bạn toàn cầu.</span>
+            <span class="text-[10px] bg-gold-900/20 px-2 py-0.5 rounded border border-gold-500/20">Xây dựng cho Trải nghiệm Du lịch Không biên giới</span>
+        </div>
+    </footer>
+
+    <!-- Scripts & Logic -->
+    <script>
+        // Database of 195 Countries enhanced with ISO-3 codes and major IATA airport codes
+        const COUNTRIES_DB = [
+            // CHÂU Á
+            { code: 'VN', code3: 'VNM', name: 'Việt Nam', englishName: 'Vietnam', flag: '🇻🇳', continent: 'Asia', iata: ['HAN', 'SGN', 'DAD', 'CXR', 'HUI'] },
+            { code: 'JP', code3: 'JPN', name: 'Nhật Bản', englishName: 'Japan', flag: '🇯🇵', continent: 'Asia', iata: ['HND', 'NRT', 'KIX', 'FUK', 'CTS', 'NGO'] },
+            { code: 'KR', code3: 'KOR', name: 'Hàn Quốc', englishName: 'South Korea', flag: '🇰🇷', continent: 'Asia', iata: ['ICN', 'GMP', 'PUS', 'CJU', 'TAE'] },
+            { code: 'CN', code3: 'CHN', name: 'Trung Quốc', englishName: 'China', flag: '🇨🇳', continent: 'Asia', iata: ['PEK', 'PVG', 'CAN', 'SZX', 'CTU', 'PKX'] },
+            { code: 'SG', code3: 'SGP', name: 'Singapore', englishName: 'Singapore', flag: '🇸🇬', continent: 'Asia', iata: ['SIN'] },
+            { code: 'TH', code3: 'THA', name: 'Thái Lan', englishName: 'Thailand', flag: '🇹🇭', continent: 'Asia', iata: ['BKK', 'DMK', 'HKT', 'CNX', 'USM', 'UTP'] },
+            { code: 'ID', code3: 'IDN', name: 'Indonesia', englishName: 'Indonesia', flag: '🇮🇩', continent: 'Asia', iata: ['CGK', 'DPS', 'SUB', 'KNO', 'UPG'] },
+            { code: 'MY', code3: 'MYS', name: 'Malaysia', englishName: 'Malaysia', flag: '🇲🇾', continent: 'Asia', iata: ['KUL', 'BKI', 'PEN', 'KCH', 'LGK'] },
+            { code: 'PH', code3: 'PHL', name: 'Philippines', englishName: 'Philippines', flag: '🇵🇭', continent: 'Asia', iata: ['MNL', 'CEB', 'MPH', 'DVO', 'PPS'] },
+            { code: 'IN', code3: 'IND', name: 'Ấn Độ', englishName: 'India', flag: '🇮🇳', continent: 'Asia', iata: ['DEL', 'BOM', 'BLR', 'MAA', 'CCU', 'HYD'] },
+            { code: 'KH', code3: 'KHM', name: 'Campuchia', englishName: 'Cambodia', flag: '🇰🇭', continent: 'Asia', iata: ['PNH', 'REP', 'KOS'] },
+            { code: 'LA', code3: 'LAO', name: 'Lào', englishName: 'Laos', flag: '🇱🇦', continent: 'Asia', iata: ['VTE', 'LPQ', 'PKZ'] },
+            { code: 'MM', code3: 'MMR', name: 'Myanmar', englishName: 'Myanmar', flag: '🇲🇲', continent: 'Asia', iata: ['RGN', 'MDY', 'NYT'] },
+            { code: 'TW', code3: 'TWN', name: 'Đài Loan', englishName: 'Taiwan', flag: '🇹🇼', continent: 'Asia', iata: ['TPE', 'KHH', 'TSA', 'TNN'] },
+            { code: 'HK', code3: 'HKG', name: 'Hồng Kông', englishName: 'Hong Kong', flag: '🇭🇰', continent: 'Asia', iata: ['HKG'] },
+            { code: 'AE', code3: 'ARE', name: 'U.A.E (Ả Rập Thống Nhất)', englishName: 'United Arab Emirates', flag: '🇦🇪', continent: 'Asia', iata: ['DXB', 'AUH', 'SHJ', 'DWC'] },
+            { code: 'SA', code3: 'SAU', name: 'Ả Rập Xê Út', englishName: 'Saudi Arabia', flag: '🇸🇦', continent: 'Asia', iata: ['RUH', 'JED', 'DMM', 'MED'] },
+            { code: 'IL', code3: 'ISR', name: 'Israel', englishName: 'Israel', flag: '🇮🇱', continent: 'Asia', iata: ['TLV', 'VDA'] },
+            { code: 'TR', code3: 'TUR', name: 'Thổ Nhĩ Kỳ', englishName: 'Turkey', flag: '🇹🇷', continent: 'Asia', iata: ['IST', 'SAW', 'AYT', 'ESB', 'ADB'] },
+            { code: 'MN', code3: 'MNG', name: 'Mông Cổ', englishName: 'Mongolia', flag: '🇲🇳', continent: 'Asia', iata: ['UBN', 'ULN'] },
+            { code: 'NP', code3: 'NPL', name: 'Nepal', englishName: 'Nepal', flag: '🇳🇵', continent: 'Asia', iata: ['KTM', 'PKR'] },
+            { code: 'LK', code3: 'LKA', name: 'Sri Lanka', englishName: 'Sri Lanka', flag: '🇱🇰', continent: 'Asia', iata: ['CMB', 'HRI'] },
+            { code: 'PK', code3: 'PAK', name: 'Pakistan', englishName: 'Pakistan', flag: '🇵🇰', continent: 'Asia', iata: ['ISB', 'KHI', 'LHE', 'PEW'] },
+            { code: 'MV', code3: 'MDV', name: 'Maldives', englishName: 'Maldives', flag: '🇲🇻', continent: 'Asia', iata: ['MLE', 'GAN'] },
+            
+            // CHÂU ÂU
+            { code: 'FR', code3: 'FRA', name: 'Pháp', englishName: 'France', flag: '🇫🇷', continent: 'Europe', iata: ['CDG', 'ORY', 'NCE', 'LYS', 'MRS'] },
+            { code: 'DE', code3: 'DEU', name: 'Đức', englishName: 'Germany', flag: '🇩🇪', continent: 'Europe', iata: ['FRA', 'MUC', 'BER', 'HAM', 'DUS', 'CGN'] },
+            { code: 'IT', code3: 'ITA', name: 'Ý (Italy)', englishName: 'Italy', flag: '🇮🇹', continent: 'Europe', iata: ['FCO', 'MXP', 'LIN', 'VCE', 'NAP', 'BLQ'] },
+            { code: 'GB', code3: 'GBR', name: 'Vương Quốc Anh', englishName: 'United Kingdom', flag: '🇬🇧', continent: 'Europe', iata: ['LHR', 'LGW', 'STN', 'MAN', 'EDI', 'BHX'] },
+            { code: 'ES', code3: 'ESP', name: 'Tây Ban Nha', englishName: 'Spain', flag: '🇪🇸', continent: 'Europe', iata: ['MAD', 'BCN', 'PMI', 'AGP', 'ALC', 'VLC'] },
+            { code: 'RU', code3: 'RUS', name: 'Nga', englishName: 'Russia', flag: '🇷🇺', continent: 'Europe', iata: ['SVO', 'DME', 'VKO', 'LED', 'OVB', 'SVX'] },
+            { code: 'NL', code3: 'NLD', name: 'Hà Lan', englishName: 'Netherlands', flag: '🇳🇱', continent: 'Europe', iata: ['AMS', 'RTM', 'EIN'] },
+            { code: 'CH', code3: 'CHE', name: 'Thụy Sĩ', englishName: 'Switzerland', flag: '🇨🇭', continent: 'Europe', iata: ['ZRH', 'GVA', 'BSL'] },
+            { code: 'SE', code3: 'SWE', name: 'Thụy Điển', englishName: 'Sweden', flag: '🇸🇪', continent: 'Europe', iata: ['ARN', 'GOT', 'BMA', 'NYO'] },
+            { code: 'NO', code3: 'NOR', name: 'Na Uy', englishName: 'Norway', flag: '🇳🇴', continent: 'Europe', iata: ['OSL', 'BGO', 'SVG', 'TRD'] },
+            { code: 'FI', code3: 'FIN', name: 'Phần Lan', englishName: 'Finland', flag: '🇫🇮', continent: 'Europe', iata: ['HEL', 'OUL', 'RVA'] },
+            { code: 'DK', code3: 'DNK', name: 'Đan Mạch', englishName: 'Denmark', flag: '🇩🇰', continent: 'Europe', iata: ['CPH', 'BLL', 'AAR'] },
+            { code: 'BE', code3: 'BEL', name: 'Bỉ', englishName: 'Belgium', flag: '🇧🇪', continent: 'Europe', iata: ['BRU', 'CRL', 'LGG'] },
+            { code: 'AT', code3: 'AUT', name: 'Áo', englishName: 'Austria', flag: '🇦🇹', continent: 'Europe', iata: ['VIE', 'SZG', 'GRZ'] },
+            { code: 'PT', code3: 'PRT', name: 'Bồ Đào Nha', englishName: 'Portugal', flag: '🇵🇹', continent: 'Europe', iata: ['LIS', 'OPO', 'FAO', 'FNC'] },
+            { code: 'GR', code3: 'GRC', name: 'Hy Lạp', englishName: 'Greece', flag: '🇬🇷', continent: 'Europe', iata: ['ATH', 'HER', 'SKG', 'RHO'] },
+            { code: 'IE', code3: 'IRL', name: 'Ireland', englishName: 'Ireland', flag: '🇮🇪', continent: 'Europe', iata: ['DUB', 'SNN', 'ORK'] },
+            { code: 'PL', code3: 'POL', name: 'Ba Lan', englishName: 'Poland', flag: '🇵🇱', continent: 'Europe', iata: ['WAW', 'KRK', 'GDN', 'WRO'] },
+            { code: 'CZ', code3: 'CZE', name: 'Cộng hòa Séc', englishName: 'Czech Republic', flag: '🇨🇿', continent: 'Europe', iata: ['PRG', 'BRQ'] },
+            { code: 'HU', code3: 'HUN', name: 'Hungary', englishName: 'Hungary', flag: '🇭🇺', continent: 'Europe', iata: ['BUD', 'DEB'] },
+            { code: 'UA', code3: 'UKR', name: 'Ukraine', englishName: 'Ukraine', flag: '🇺🇦', continent: 'Europe', iata: ['KBP', 'IEV', 'ODS', 'LWO'] },
+            { code: 'RO', code3: 'ROU', name: 'Romania', englishName: 'Romania', flag: '🇷🇴', continent: 'Europe', iata: ['OTP', 'CLJ', 'TSR'] },
+            { code: 'IS', code3: 'ISL', name: 'Iceland', englishName: 'Iceland', flag: '🇮🇸', continent: 'Europe', iata: ['KEF', 'RKV'] },
+
+            // CHÂU MỸ
+            { code: 'US', code3: 'USA', name: 'Hoa Kỳ (Mỹ)', englishName: 'United States', flag: '🇺🇸', continent: 'Americas', iata: ['JFK', 'LAX', 'ORD', 'SFO', 'MIA', 'DFW', 'ATL', 'EWR', 'DEN'] },
+            { code: 'CA', code3: 'CAN', name: 'Canada', englishName: 'Canada', flag: '🇨🇦', continent: 'Americas', iata: ['YYZ', 'YVR', 'YUL', 'YYC', 'YEG', 'YOW'] },
+            { code: 'MX', code3: 'MEX', name: 'Mexico', englishName: 'Mexico', flag: '🇲🇽', continent: 'Americas', iata: ['MEX', 'CUN', 'GDL', 'MTY', 'TIJ'] },
+            { code: 'BR', code3: 'BRA', name: 'Brazil', englishName: 'Brazil', flag: '🇧🇷', continent: 'Americas', iata: ['GRU', 'GIG', 'BSB', 'CGH', 'SDU', 'CNF'] },
+            { code: 'AR', code3: 'ARG', name: 'Argentina', englishName: 'Argentina', flag: '🇦🇷', continent: 'Americas', iata: ['EZE', 'AEP', 'COR', 'MDZ'] },
+            { code: 'CO', code3: 'COL', name: 'Colombia', englishName: 'Colombia', flag: '🇨🇴', continent: 'Americas', iata: ['BOG', 'MDE', 'CLO', 'CTG'] },
+            { code: 'CL', code3: 'CHL', name: 'Chile', englishName: 'Chile', flag: '🇨🇱', continent: 'Americas', iata: ['SCL', 'ANF', 'PUQ'] },
+            { code: 'PE', code3: 'PER', name: 'Peru', englishName: 'Peru', flag: '🇵🇪', continent: 'Americas', iata: ['LIM', 'CUZ', 'AQP'] },
+            { code: 'CU', code3: 'CUB', name: 'Cuba', englishName: 'Cuba', flag: '🇨🇺', continent: 'Americas', iata: ['HAV', 'VRA', 'HOG'] },
+            { code: 'VE', code3: 'VEN', name: 'Venezuela', englishName: 'Venezuela', flag: '🇻🇪', continent: 'Americas', iata: ['CCS', 'MAR', 'PMV'] },
+            { code: 'CR', code3: 'CRI', name: 'Costa Rica', englishName: 'Costa Rica', flag: '🇨🇷', continent: 'Americas', iata: ['SJO', 'LIR'] },
+
+            // CHÂU PHI
+            { code: 'ZA', code3: 'ZAF', name: 'Nam Phi', englishName: 'South Africa', flag: '🇿🇦', continent: 'Africa', iata: ['JNB', 'CPT', 'DUR', 'PLZ'] },
+            { code: 'EG', code3: 'EGY', name: 'Ai Cập', englishName: 'Egypt', flag: '🇪🇬', continent: 'Africa', iata: ['CAI', 'HRG', 'SSH', 'ALY'] },
+            { code: 'MA', code3: 'MAR', name: 'Ma-rốc', englishName: 'Morocco', flag: '🇲🇦', continent: 'Africa', iata: ['CMN', 'RAK', 'AGA', 'FEZ'] },
+            { code: 'KE', code3: 'KEN', name: 'Kenya', englishName: 'Kenya', flag: '🇰🇪', continent: 'Africa', iata: ['NBO', 'MBA', 'KIS'] },
+            { code: 'NG', code3: 'NGA', name: 'Nigeria', englishName: 'Nigeria', flag: '🇳🇬', continent: 'Africa', iata: ['LOS', 'ABV', 'KAN'] },
+            { code: 'DZ', code3: 'DZA', name: 'Algeria', englishName: 'Algeria', flag: '🇩🇿', continent: 'Africa', iata: ['ALG', 'ORN', 'CZL'] },
+            { code: 'ET', code3: 'ETH', name: 'Ethiopia', englishName: 'Ethiopia', flag: '🇪🇹', continent: 'Africa', iata: ['ADD', 'DIR'] },
+            { code: 'TZ', code3: 'TZA', name: 'Tanzania', englishName: 'Tanzania', flag: '🇹🇿', continent: 'Africa', iata: ['DAR', 'ZNZ', 'JRO'] },
+
+            // CHÂU ĐẠI DƯƠNG
+            { code: 'AU', code3: 'AUS', name: 'Úc (Australia)', englishName: 'Australia', flag: '🇦🇺', continent: 'Oceania', iata: ['SYD', 'MEL', 'BNE', 'PER', 'ADL', 'CNS'] },
+            { code: 'NZ', code3: 'NZL', name: 'New Zealand', englishName: 'New Zealand', flag: '🇳🇿', continent: 'Oceania', iata: ['AKL', 'WLG', 'CHC', 'ZQN'] },
+            { code: 'FJ', code3: 'FJI', name: 'Fiji', englishName: 'Fiji', flag: '🇫🇯', continent: 'Oceania', iata: ['NAN', 'SUV'] },
+            { code: 'PG', code3: 'PNG', name: 'Papua New Guinea', englishName: 'Papua New Guinea', flag: '🇵🇬', continent: 'Oceania', iata: ['POM', 'LAE'] }
+        ];
+
+        // Default Presets to populate the app for a majestic start
+        const DEFAULT_MOCK_PRESETS = {
+            passport: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=600&q=80', // Premium passport look
+            visa: 'https://images.unsplash.com/photo-1578894381163-e72c17f2d45f?auto=format&fit=crop&w=600&q=80', // Stamp/documents look
+            stamp: 'https://images.unsplash.com/photo-1585672841975-d1fb5ee86ec9?auto=format&fit=crop&w=600&q=80' // Stamps detail
+        };
+
+        // State Store variables
+        let selectedCountryCode = null;
+        let selectedContinent = 'All';
+        let activeDocTypeFilter = 'all';
+        let currentRotation = 0;
+        
+        // Main Database stored in localStorage
+        let collectionDocuments = [];
+
+        window.onload = function() {
+            loadSavedCollection();
+            populateCountryExplorer();
+            updateStatistics();
+            
+            // Check if collection is empty, then seed 3 sample documents
+            if (collectionDocuments.length === 0) {
+                seedInitialData();
+            } else {
+                updateStatistics();
+            }
+        };
+
+        // Seed beautifully styled default documents to inspire users
+        function seedInitialData() {
+            collectionDocuments = [
+                {
+                    id: 'seed-1',
+                    countryCode: 'VN',
+                    title: 'Hộ chiếu Phổ thông Việt Nam (Bìa xanh tím)',
+                    type: 'passport',
+                    date: '2023-08-15',
+                    notes: 'Hộ chiếu phổ thông Việt Nam mẫu mới đổi năm 2023, màu xanh tím than rất sang trọng và đậm đà bản sắc!',
+                    imageUrl: DEFAULT_MOCK_PRESETS.passport
+                },
+                {
+                    id: 'seed-2',
+                    countryCode: 'JP',
+                    title: 'Thị thực Du lịch Nhật Bản (Single Entry)',
+                    type: 'visa',
+                    date: '2024-04-10',
+                    notes: 'Visa dán lên hộ chiếu cực đẹp xin tại Lãnh sự quán Hà Nội. Chuyến đi ngắm hoa anh đào rực rỡ!',
+                    imageUrl: DEFAULT_MOCK_PRESETS.visa
+                },
+                {
+                    id: 'seed-3',
+                    countryCode: 'FR',
+                    title: 'Dấu nhập cảnh Sân bay Paris Charles de Gaulle',
+                    type: 'stamp',
+                    date: '2025-05-24',
+                    notes: 'Nhập cảnh khối Schengen thuận lợi, con dấu sắc nét với biểu tượng máy bay và ngôi sao EU.',
+                    imageUrl: DEFAULT_MOCK_PRESETS.stamp
+                }
+            ];
+            saveCollectionToStorage();
+            updateStatistics();
+            
+            // Auto-select Vietnam to showcase seed
+            selectCountry('VN');
+            showToast('Chào mừng! Đã khởi tạo 3 tài liệu mẫu du lịch.', 'success');
+        }
+
+        // Save State
+        function saveCollectionToStorage() {
+            localStorage.setItem('passportfolio_collection', JSON.stringify(collectionDocuments));
+        }
+
+        // Load State
+        function loadSavedCollection() {
+            const data = localStorage.getItem('passportfolio_collection');
+            if (data) {
+                try {
+                    collectionDocuments = JSON.parse(data);
+                } catch(e) {
+                    collectionDocuments = [];
+                }
+            }
+        }
+
+        // Recalculate stats & metrics
+        function updateStatistics() {
+            const activeCountriesSet = new Set(collectionDocuments.map(doc => doc.countryCode));
+            const uniqueCollectedCount = activeCountriesSet.size;
+            
+            const totalDocsCount = collectionDocuments.length;
+
+            const countPassports = collectionDocuments.filter(d => d.type === 'passport').length;
+            const countVisas = collectionDocuments.filter(d => d.type === 'visa').length;
+            const countStamps = collectionDocuments.filter(d => d.type === 'stamp').length;
+            const countOthers = collectionDocuments.filter(d => d.type === 'other').length;
+
+            document.getElementById('collected-countries-count').innerText = `${uniqueCollectedCount}/195`;
+            document.getElementById('total-docs-count').innerText = totalDocsCount;
+            document.getElementById('stat-passports').innerText = countPassports;
+            document.getElementById('stat-visas').innerText = countVisas;
+            document.getElementById('stat-stamps').innerText = countStamps;
+            document.getElementById('stat-others').innerText = countOthers;
+
+            const percent = Math.min(100, Math.round((uniqueCollectedCount / 195) * 100));
+            document.getElementById('progress-percent').innerText = `${percent}%`;
+            
+            const circleElement = document.getElementById('progress-circle');
+            const circumference = 251.2;
+            const offset = circumference - (percent / 100) * circumference;
+            circleElement.style.strokeDashoffset = offset;
+            
+            populateCountryExplorer();
+        }
+
+        // Populate the left-side country panel with enhanced ISO matching highlights
+        function populateCountryExplorer() {
+            const container = document.getElementById('country-list');
+            container.innerHTML = '';
+
+            const searchValue = document.getElementById('country-search').value.toLowerCase().trim();
+            const filterCollectedOnly = document.getElementById('filter-collected-only').checked;
+
+            // Filter countries
+            const filtered = COUNTRIES_DB.filter(country => {
+                const matchesSearch = !searchValue || 
+                                      country.name.toLowerCase().includes(searchValue) || 
+                                      country.englishName.toLowerCase().includes(searchValue) ||
+                                      country.code.toLowerCase().includes(searchValue) ||
+                                      country.code3.toLowerCase().includes(searchValue) ||
+                                      (country.iata && country.iata.some(airport => airport.toLowerCase().includes(searchValue)));
+                
+                const matchesContinent = (selectedContinent === 'All') || (country.continent === selectedContinent);
+                
+                const docCount = getCountryDocsCount(country.code);
+                const matchesCollected = !filterCollectedOnly || (docCount > 0);
+
+                return matchesSearch && matchesContinent && matchesCollected;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="p-8 text-center text-slate-500 text-xs">
+                        <i class="fa-solid fa-earth-europe text-xl mb-2 opacity-40"></i>
+                        <p>Không tìm thấy quốc gia nào trùng khớp</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Render country list
+            filtered.forEach(country => {
+                const docCount = getCountryDocsCount(country.code);
+                const isSelected = selectedCountryCode === country.code;
+                
+                // Determine highlight classes for ISO codes depending on search matches
+                const isCodeMatched = searchValue && country.code.toLowerCase().includes(searchValue);
+                const isCode3Matched = searchValue && country.code3.toLowerCase().includes(searchValue);
+                
+                const code2BadgeClass = isCodeMatched 
+                    ? 'bg-gold-500 text-navy-950 font-bold border border-gold-400 ring-2 ring-gold-400' 
+                    : 'bg-gold-950/80 text-gold-300 border border-gold-800/60';
+                    
+                const code3BadgeClass = isCode3Matched 
+                    ? 'bg-gold-500 text-navy-950 font-bold border border-gold-400 ring-2 ring-gold-400' 
+                    : 'bg-navy-850 text-slate-400 border border-gold-900/30';
+
+                const item = document.createElement('div');
+                item.className = `p-3 flex items-center justify-between cursor-pointer transition-all hover:bg-navy-800/40 ${isSelected ? 'bg-gold-900/25 border-l-4 border-gold-500' : ''}`;
+                item.onclick = () => selectCountry(country.code);
+
+                // Highlight match of airports
+                const airportsStr = country.iata ? country.iata.slice(0, 3).join(', ') : '';
+
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3 overflow-hidden">
+                        <span class="text-2xl leading-none flex-shrink-0">${country.flag}</span>
+                        <div class="overflow-hidden">
+                            <div class="flex items-center space-x-2 flex-wrap">
+                                <h4 class="font-semibold text-xs text-slate-100 truncate">${country.name}</h4>
+                                <div class="flex items-center space-x-1 flex-shrink-0">
+                                    <span class="text-[8px] px-1 py-0.2 rounded font-mono ${code2BadgeClass}" title="Mã ISO 2 chữ">${country.code}</span>
+                                    <span class="text-[8px] px-1 py-0.2 rounded font-mono ${code3BadgeClass}" title="Mã ISO 3 chữ">${country.code3}</span>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-slate-500 truncate">${country.englishName} • <span class="text-[9px] text-gold-500/60 font-mono">${airportsStr}</span></p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 flex-shrink-0">
+                        ${docCount > 0 ? `
+                            <span class="text-[10px] bg-gold-600/20 text-gold-300 border border-gold-500/30 font-bold px-1.5 py-0.5 rounded-full flex items-center space-x-1">
+                                <i class="fa-solid fa-passport text-[8px]"></i>
+                                <span>${docCount}</span>
+                            </span>
+                        ` : `
+                            <span class="text-[10px] text-slate-600 px-1.5 py-0.5 hover:text-gold-400">+ Thêm</span>
+                        `}
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function getCountryDocsCount(code) {
+            return collectionDocuments.filter(d => d.countryCode === code).length;
+        }
+
+        // Continent tab selection
+        function changeContinent(continent) {
+            selectedContinent = continent;
+            
+            document.querySelectorAll('.continent-tab').forEach(btn => {
+                btn.className = "continent-tab px-2.5 py-1 rounded bg-navy-950 text-slate-400 border border-transparent whitespace-nowrap transition-all";
+            });
+            document.getElementById(`tab-${continent}`).className = "continent-tab px-2.5 py-1 rounded bg-gold-800/60 text-gold-100 font-medium whitespace-nowrap border border-gold-500/40 transition-all";
+
+            populateCountryExplorer();
+        }
+
+        function filterCountries() {
+            populateCountryExplorer();
+        }
+
+        // New: Handle search input changes
+        function handleSearchInput() {
+            const input = document.getElementById('country-search');
+            const btn = document.getElementById('clear-search-btn');
+            
+            // Toggle clear button visibility
+            if (input.value.length > 0) {
+                btn.classList.remove('hidden');
+            } else {
+                btn.classList.add('hidden');
+            }
+            
+            filterCountries();
+        }
+
+        // New: Clear search action
+        function clearSearch() {
+            const input = document.getElementById('country-search');
+            input.value = '';
+            document.getElementById('clear-search-btn').classList.add('hidden');
+            filterCountries();
+        }
+
+        // Select Country action
+        function selectCountry(code) {
+            selectedCountryCode = code;
+            
+            const country = COUNTRIES_DB.find(c => c.code === code);
+            if (!country) return;
+
+            document.getElementById('no-country-fallback').classList.add('hidden');
+
+            // Set headers and codes
+            document.getElementById('active-flag-container').innerText = country.flag;
+            document.getElementById('active-country-name').innerText = country.name;
+            document.getElementById('active-country-continent').innerText = getContinentNameVi(country.continent);
+            document.getElementById('active-country-code').innerText = country.code;
+            document.getElementById('active-country-code3').innerText = country.code3;
+
+            activeDocTypeFilter = 'all';
+            updateDocTypeFilterStyles();
+
+            renderCountryDocs();
+            populateCountryExplorer();
+        }
+
+        function getContinentNameVi(continent) {
+            switch(continent) {
+                case 'Asia': return 'Châu Á';
+                case 'Europe': return 'Châu Âu';
+                case 'Americas': return 'Châu Mỹ';
+                case 'Africa': return 'Châu Phi';
+                case 'Oceania': return 'Châu Đại Dương';
+                default: return continent;
+            }
+        }
+
+        function filterActiveDocs(type) {
+            activeDocTypeFilter = type;
+            updateDocTypeFilterStyles();
+            renderCountryDocs();
+        }
+
+        function updateDocTypeFilterStyles() {
+            const btns = document.querySelectorAll('.doc-filter-btn');
+            btns.forEach(btn => {
+                btn.className = "doc-filter-btn px-3 py-1 rounded bg-navy-850 text-slate-400 text-xs border border-transparent";
+            });
+            
+            const indexMap = { 'all': 0, 'passport': 1, 'visa': 2, 'stamp': 3, 'other': 4 };
+            const activeIndex = indexMap[activeDocTypeFilter];
+            if (btns[activeIndex]) {
+                btns[activeIndex].className = "doc-filter-btn px-3 py-1 rounded bg-gold-800/40 text-gold-200 text-xs border border-gold-500/30 font-medium";
+            }
+        }
+
+        // Render current country documents
+        function renderCountryDocs() {
+            const grid = document.getElementById('documents-gallery-grid');
+            const emptyState = document.getElementById('empty-gallery-state');
+            grid.innerHTML = '';
+
+            const countryDocs = collectionDocuments.filter(doc => {
+                const matchesCountry = doc.countryCode === selectedCountryCode;
+                const matchesType = (activeDocTypeFilter === 'all') || (doc.type === activeDocTypeFilter);
+                return matchesCountry && matchesType;
+            });
+
+            if (countryDocs.length === 0) {
+                emptyState.classList.remove('hidden');
+                grid.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            countryDocs.forEach(doc => {
+                const card = document.createElement('div');
+                card.className = "bg-navy-900 border border-gold-900/30 rounded-xl overflow-hidden hover:border-gold-500/50 shadow-md transition-all group duration-300 hover:-translate-y-1";
+                
+                let badgeHtml = '';
+                if (doc.type === 'passport') badgeHtml = '<span class="px-2 py-0.5 rounded bg-blue-900/40 border border-blue-500/30 text-[10px] text-blue-300"><i class="fa-solid fa-address-card mr-1"></i>Hộ chiếu</span>';
+                if (doc.type === 'visa') badgeHtml = '<span class="px-2 py-0.5 rounded bg-yellow-900/40 border border-yellow-500/30 text-[10px] text-yellow-300"><i class="fa-solid fa-ticket mr-1"></i>Thị thực</span>';
+                if (doc.type === 'stamp') badgeHtml = '<span class="px-2 py-0.5 rounded bg-emerald-900/40 border border-emerald-500/30 text-[10px] text-emerald-300"><i class="fa-solid fa-stamp mr-1"></i>Con dấu</span>';
+                if (doc.type === 'other') badgeHtml = '<span class="px-2 py-0.5 rounded bg-purple-900/40 border border-purple-500/30 text-[10px] text-purple-300"><i class="fa-solid fa-passport mr-1"></i>Khác</span>';
+
+                const formattedDate = doc.date ? new Date(doc.date).toLocaleDateString('vi-VN') : 'Không rõ ngày';
+
+                card.innerHTML = `
+                    <div class="relative h-40 bg-navy-950 overflow-hidden cursor-pointer" onclick="openViewDocModal('${doc.id}')">
+                        <img src="${doc.imageUrl}" alt="${doc.title}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                        <div class="absolute inset-0 bg-gradient-to-t from-navy-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3 justify-between">
+                            <span class="text-xs font-semibold text-gold-300 flex items-center"><i class="fa-solid fa-eye mr-1"></i> Xem chi tiết</span>
+                        </div>
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <div class="flex items-center justify-between">
+                            ${badgeHtml}
+                            <span class="text-[10px] text-slate-500"><i class="fa-solid fa-calendar-days mr-1"></i>${formattedDate}</span>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm text-gold-100 line-clamp-1 group-hover:text-gold-300 transition-colors">${doc.title}</h4>
+                            <p class="text-xs text-slate-400 mt-1 line-clamp-2 italic">${doc.notes || 'Không có ghi chú.'}</p>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function triggerFileInput() {
+            document.getElementById('form-image-input').click();
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('Ảnh quá lớn (>2MB). Hãy giảm kích thước ảnh trước khi tải lên!', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64Data = e.target.result;
+                
+                const previewImg = document.getElementById('upload-preview');
+                const prompt = document.getElementById('upload-prompt');
+                
+                previewImg.src = base64Data;
+                previewImg.classList.remove('hidden');
+                prompt.classList.add('hidden');
+
+                document.getElementById('selected-image-data').value = base64Data;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function selectPresetImage(type) {
+            const url = DEFAULT_MOCK_PRESETS[type];
+            const previewImg = document.getElementById('upload-preview');
+            const prompt = document.getElementById('upload-prompt');
+
+            previewImg.src = url;
+            previewImg.classList.remove('hidden');
+            prompt.classList.add('hidden');
+
+            document.getElementById('selected-image-data').value = url;
+            showToast('Đã chọn hình ảnh mẫu du lịch!', 'info');
+        }
+
+        function openAddDocModal() {
+            if (!selectedCountryCode) {
+                showToast('Vui lòng chọn quốc gia trước khi thêm tài liệu.', 'error');
+                return;
+            }
+
+            const country = COUNTRIES_DB.find(c => c.code === selectedCountryCode);
+            document.getElementById('modal-country-name').innerText = country.name;
+            document.getElementById('form-country-code').value = country.code;
+            
+            document.getElementById('add-doc-form').reset();
+            document.getElementById('selected-image-data').value = '';
+            
+            const previewImg = document.getElementById('upload-preview');
+            const prompt = document.getElementById('upload-prompt');
+            previewImg.classList.add('hidden');
+            previewImg.src = '';
+            prompt.classList.remove('hidden');
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('form-date').value = today;
+
+            document.getElementById('add-doc-modal').classList.remove('hidden');
+        }
+
+        function closeAddDocModal() {
+            document.getElementById('add-doc-modal').classList.add('hidden');
+        }
+
+        function handleSaveDoc(event) {
+            event.preventDefault();
+
+            const countryCode = document.getElementById('form-country-code').value;
+            const title = document.getElementById('form-title').value.trim();
+            const type = document.getElementById('form-type').value;
+            const date = document.getElementById('form-date').value;
+            const notes = document.getElementById('form-notes').value.trim();
+            const imageUrl = document.getElementById('selected-image-data').value;
+
+            if (!imageUrl) {
+                showToast('Vui lòng tải ảnh lên hoặc chọn một ảnh mẫu!', 'error');
+                return;
+            }
+
+            const newDoc = {
+                id: 'doc-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+                countryCode,
+                title,
+                type,
+                date,
+                notes,
+                imageUrl
+            };
+
+            collectionDocuments.push(newDoc);
+            saveCollectionToStorage();
+            updateStatistics();
+            closeAddDocModal();
+            renderCountryDocs();
+            
+            showToast('Thêm giấy tờ mới thành công!', 'success');
+        }
+
+        function openViewDocModal(docId) {
+            const doc = collectionDocuments.find(d => d.id === docId);
+            if (!doc) return;
+
+            const country = COUNTRIES_DB.find(c => c.code === doc.countryCode);
+
+            document.getElementById('view-flag').innerText = country ? country.flag : '🌎';
+            document.getElementById('view-title').innerText = doc.title;
+            
+            const docTypesVi = { passport: 'Hộ chiếu', visa: 'Thị thực', stamp: 'Con dấu', other: 'Vé/Giấy tờ khác' };
+            const formattedDate = doc.date ? new Date(doc.date).toLocaleDateString('vi-VN') : 'Không rõ ngày';
+            document.getElementById('view-meta').innerText = `${country ? country.name : 'Unknown'} | Loại: ${docTypesVi[doc.type]} | Ngày cấp: ${formattedDate}`;
+            
+            document.getElementById('view-notes').innerText = doc.notes || 'Không có ghi chú hoặc kỷ niệm hành trình nào được mô tả.';
+
+            currentRotation = 0;
+            const imgElement = document.getElementById('view-image');
+            imgElement.src = doc.imageUrl;
+            imgElement.style.transform = `rotate(0deg)`;
+
+            const deleteBtn = document.getElementById('view-delete-btn');
+            deleteBtn.onclick = () => handleDeleteDoc(docId);
+
+            document.getElementById('view-doc-modal').classList.remove('hidden');
+        }
+
+        function closeViewDocModal() {
+            document.getElementById('view-doc-modal').classList.add('hidden');
+        }
+
+        function rotateImage() {
+            currentRotation = (currentRotation + 90) % 360;
+            const imgElement = document.getElementById('view-image');
+            imgElement.style.transform = `rotate(${currentRotation}deg)`;
+            showToast(`Đã xoay ảnh ${currentRotation}°`, 'info');
+        }
+
+        function handleDeleteDoc(docId) {
+            if (confirmModalCustom('Bạn có chắc chắn muốn xóa tài liệu này khỏi bộ sưu tập?')) {
+                collectionDocuments = collectionDocuments.filter(d => d.id !== docId);
+                saveCollectionToStorage();
+                
+                updateStatistics();
+                closeViewDocModal();
+                renderCountryDocs();
+                showToast('Đã xóa tài liệu thành công.', 'success');
+            }
+        }
+
+        function confirmModalCustom(message) {
+            return confirm(message);
+        }
+
+        function exportData() {
+            if (collectionDocuments.length === 0) {
+                showToast('Bộ sưu tập của bạn hiện đang trống, không thể xuất tập tin!', 'warning');
+                return;
+            }
+
+            try {
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(collectionDocuments));
+                const downloadAnchor = document.createElement('a');
+                downloadAnchor.setAttribute("href", dataStr);
+                downloadAnchor.setAttribute("download", `PassportFolio_Backup_${new Date().toISOString().split('T')[0]}.json`);
+                document.body.appendChild(downloadAnchor);
+                downloadAnchor.click();
+                downloadAnchor.remove();
+                showToast('Xuất tập tin sao lưu JSON thành công!', 'success');
+            } catch(e) {
+                showToast('Có lỗi xảy ra trong quá trình xuất dữ liệu.', 'error');
+            }
+        }
+
+        function triggerImport() {
+            document.getElementById('import-file-input').click();
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedList = JSON.parse(e.target.result);
+                    if (Array.isArray(importedList)) {
+                        const isValid = importedList.every(doc => doc.id && doc.countryCode && doc.title && doc.type);
+                        if (isValid) {
+                            collectionDocuments = importedList;
+                            saveCollectionToStorage();
+                            updateStatistics();
+                            
+                            if (selectedCountryCode) {
+                                renderCountryDocs();
+                            }
+                            showToast(`Nhập dữ liệu thành công! Khôi phục ${importedList.length} tài liệu.`, 'success');
+                        } else {
+                            showToast('Định dạng dữ liệu tập tin sao lưu không khớp với PassportFolio.', 'error');
+                        }
+                    } else {
+                        showToast('File dữ liệu không đúng cấu trúc danh sách.', 'error');
+                    }
+                } catch(err) {
+                    showToast('Có lỗi xảy ra khi phân tích tập tin sao lưu.', 'error');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-navy-900 border-gold-500/50 text-gold-200';
+            let icon = '<i class="fa-solid fa-circle-info"></i>';
+            
+            if (type === 'success') {
+                bgClass = 'bg-emerald-950/95 border-emerald-500/50 text-emerald-200';
+                icon = '<i class="fa-solid fa-circle-check"></i>';
+            } else if (type === 'error') {
+                bgClass = 'bg-red-950/95 border-red-500/50 text-red-200';
+                icon = '<i class="fa-solid fa-triangle-exclamation"></i>';
+            } else if (type === 'warning') {
+                bgClass = 'bg-yellow-950/95 border-yellow-500/50 text-yellow-200';
+                icon = '<i class="fa-solid fa-circle-exclamation"></i>';
+            }
+
+            toast.className = `p-3.5 rounded-lg border flex items-center space-x-2.5 shadow-xl text-xs font-semibold ${bgClass} transform translate-y-2 opacity-0 transition-all duration-300 pointer-events-auto`;
+            toast.innerHTML = `
+                <span class="text-base">${icon}</span>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
